@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/TodoApp.UnitTests/TodoApp.UnitTests.csproj" />
+  </Folder>
+  <Project Path="TodoApp.API/TodoApp.API.csproj" />
+  <Project Path="TodoApp.Application/TodoApp.Application.csproj" />
+  <Project Path="TodoApp.Domain/TodoApp.Domain.csproj" />
+  <Project Path="TodoApp.Persistence/TodoApp.Persistence.csproj" />
+</Solution>
