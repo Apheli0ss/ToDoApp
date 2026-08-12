@@ -26,6 +26,8 @@ public static class DependencyInjection
         // Her MediatR isteğinden önce doğrulama uygulanır.
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
+        services.AddScoped<TodoApp.Application.Abstractions.Services.IRoomCodeGenerator, TodoApp.Application.Services.RoomCodeGenerator>();
+
         return services;
     }
 }

@@ -7,12 +7,7 @@ public enum Priority
 {
     Low = 1,
     Medium = 2,
-    High = 3
-}
-
-public enum TodoStatus
-{
-    Pending = 0,      // Bekliyor
-    InProgress = 1,   // Devam Ediyor
-    Completed = 2     // Tamamlandı
+    High = 3,
+    Urgent = 4,
+    Critical = 5
 }

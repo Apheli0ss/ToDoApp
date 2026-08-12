@@ -9,7 +9,7 @@ namespace TodoApp.Application.Features.Todos.Queries.GetTodoById;
 /// <summary>
 /// Kimliği verilen Todo kaydını okumak için kullanılan CQRS query'sidir.
 /// </summary>
-public sealed record GetTodoByIdQuery(int Id) : IRequest<TodoDto>;
+public sealed record GetTodoByIdQuery(int Id, int UserId) : IRequest<TodoDto>;
 
 /// <summary>
 /// Tek kaydın bulunması ve DTO'ya dönüştürülmesinden sorumludur.
@@ -22,9 +22,11 @@ public sealed class GetTodoByIdQueryHandler(ITodoRepository todoRepository)
     /// </summary>
     public async Task<TodoDto> Handle(GetTodoByIdQuery request, CancellationToken cancellationToken)
     {
-        var todo = await todoRepository.GetByIdAsync(request.Id, cancellationToken)
-            ?? throw new NotFoundException(nameof(TodoDto), request.Id);
+        // null sonucunu istemciye belirsiz bicimde gondermek yerine kayit yok hatasi uretilir.
+        var todo = await todoRepository.GetByIdAsync(request.Id, request.UserId, cancellationToken)
+            ?? throw new NotFoundException("Todo", request.Id);
 
+        // Entity, API'nin disariya acacagi DTO nesnesine donusturulur.
         return todo.ToDto();
     }
 }

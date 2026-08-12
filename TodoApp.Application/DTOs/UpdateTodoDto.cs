@@ -46,4 +46,12 @@ public class UpdateTodoDto
     /// Nullable olduğu için tarih verilmesi zorunlu değildir.
     /// </summary>
     public DateTime? DueDate { get; set; }
+
+    public string? Assignee { get; set; }
+    
+    public string? Category { get; set; }
+    
+    public string? EstimatedTime { get; set; }
+    
+    public List<SubtaskDto>? Subtasks { get; set; } = new();
 }

@@ -70,4 +70,12 @@ public class TodoDto
     /// Nullable olduğu için boş bırakılabilir.
     /// </summary>
     public DateTime? DueDate { get; set; }
+
+    public string? Assignee { get; set; }
+    
+    public string? Category { get; set; }
+    
+    public string? EstimatedTime { get; set; }
+    
+    public List<SubtaskDto> Subtasks { get; set; } = new();
 }

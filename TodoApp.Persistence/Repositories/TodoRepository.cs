@@ -48,42 +48,47 @@ public class TodoRepository : ITodoRepository
     /// <summary>
     /// Bütün Todo kayıtlarını getirir.
     /// </summary>
-    public async Task<List<TodoItem>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<(List<TodoItem> Items, int TotalCount)> GetAllAsync(int userId, int? roomId, int skip, int take, CancellationToken cancellationToken)
     {
-        // TodoItems tablosunu al.
-        //
-        // OrderByDescending:
-        // En yeni kayıtlar üstte olacak şekilde sırala.
-        //
-        // SQL:
-        // ORDER BY CreatedDate DESC
-        //
-        // ToListAsync():
-        // Sorguyu çalıştır ve sonucu liste olarak getir.
-        return await _context.TodoItems
-            .OrderByDescending(x => x.CreatedDate)
+        var query = _context.TodoItems.AsNoTracking().Include(t => t.Subtasks).AsQueryable();
+
+        if (roomId.HasValue)
+        {
+            query = query.Where(t => t.RoomId == roomId.Value);
+        }
+        else
+        {
+            query = query.Where(t => t.UserId == userId && t.RoomId == null);
+        }
+
+        int totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(t => t.CreatedDate)
+            .Skip(skip)
+            .Take(take)
             .ToListAsync(cancellationToken);
+            
+        return (items, totalCount);
     }
 
     /// <summary>
     /// Id'ye göre tek bir Todo getirir.
     /// </summary>
-    public async Task<TodoItem?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<TodoItem?> GetByIdAsync(int id, int userId, CancellationToken cancellationToken)
     {
-        // İlk eşleşen kaydı getir.
-        //
-        // SQL:
-        // SELECT TOP(1)
-        // FROM TodoItems
-        // WHERE Id=@id
         return await _context.TodoItems
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .Include(t => t.Subtasks)
+            .FirstOrDefaultAsync(t => t.Id == id && 
+                (t.UserId == userId || 
+                (t.RoomId != null && _context.RoomMembers.Any(rm => rm.RoomId == t.RoomId && rm.UserId == userId))), 
+                cancellationToken);
     }
 
     /// <summary>
     /// Yeni Todo ekler.
     /// </summary>
-    public async Task AddAsync(TodoItem todo, CancellationToken cancellationToken = default)
+    public async Task AddAsync(TodoItem todo, CancellationToken cancellationToken)
     {
         // Todo nesnesini EF Core'un Change Tracker'ına ekler.
         //
@@ -98,7 +103,7 @@ public class TodoRepository : ITodoRepository
     /// <summary>
     /// Todo günceller.
     /// </summary>
-    public Task UpdateAsync(TodoItem todo, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(TodoItem todo, CancellationToken cancellationToken)
     {
         // EF Core'a
         // "Bu nesne güncellendi." bilgisini verir.
@@ -114,7 +119,7 @@ public class TodoRepository : ITodoRepository
     /// <summary>
     /// Todo siler.
     /// </summary>
-    public Task DeleteAsync(TodoItem todo, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(TodoItem todo, CancellationToken cancellationToken)
     {
         // EF Core'a
         // "Bu nesne silinecek." bilgisini verir.
@@ -134,7 +139,7 @@ public class TodoRepository : ITodoRepository
     ///
     /// işlemleri burada SQL'e dönüşür.
     /// </summary>
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         // EF Core'un takip ettiği tüm değişiklikleri
         // SQL Server'a gönderir.
